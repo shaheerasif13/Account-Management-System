@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Random;
+import java.sql.*;
 
 public class AccountManagementSystem {
 
@@ -500,9 +501,10 @@ public class AccountManagementSystem {
 		return -1;
 	}
 
-	// ****************************************************************************
-	// Method to start the system (Only public method of account management system)
-	// ****************************************************************************
+	// **********************
+	// Method to start system
+	// **********************
+
 	public void start() {
 		int choice = -1;
 
@@ -526,5 +528,73 @@ public class AccountManagementSystem {
 						+ (int) SavingsAccount.getInterestRate() + "%");
 			}
 		}
+	}
+
+	// ***************************************************
+	// Method to check username and password from database
+	// ***************************************************
+
+	public boolean validateAdminLogin(String username, String password) {
+		boolean valid = true;
+
+		try {
+			String url = "jdbc:mysql://localhost:3308/accountmanagementsystem";
+			String uname = "root";
+			String pass = "tiger123";
+
+			// Load and register driver
+			Class.forName("com.mysql.cj.jdbc.Driver");
+
+			// Establishing connection
+			try {
+				Connection connection = DriverManager.getConnection(url, uname, pass);
+
+				// Creating statement
+				String query = "SELECT * FROM Login WHERE Username = ? AND Password = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(query);
+				preparedStatement.setString(1, username);
+				preparedStatement.setString(2, password);
+
+				// Executing query and storing in result set
+				ResultSet resultSet = preparedStatement.executeQuery();
+
+				// If username or password is invalid
+				if (!resultSet.next()) {
+					valid = false;
+				}
+
+				preparedStatement.close();
+				connection.close();
+			}
+
+			catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return valid;
+	}
+
+	// ************************
+	// Method to turn on system
+	// ************************
+	public void ON() {
+		System.out.print("\nUsername: ");
+		String username = scanner.nextLine();
+		System.out.print("Password: ");
+		String password = scanner.nextLine();
+
+		// Validating admin log in
+		if (!this.validateAdminLogin(username, password)) {
+			System.out.println("\nInvalid username or password!");
+			return;
+		}
+
+		// Starting system
+		this.start();
 	}
 }
